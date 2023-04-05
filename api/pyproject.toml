@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["senior-sigan"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+uvicorn = "^0.21.1"
+fastapi = "^0.95.0"
+pydantic = "^1.10.7"
+autopep8 = "^2.0.2"
+websockets = "^11.0"
+
+[tool.poetry.dev-dependencies]
+mypy = "^1.1.1"
+isort = "^5.12.0"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 88
+[build-system]
+requires = ["poetry>=1.0"]
+build-backend = "poetry.masonry.api"
