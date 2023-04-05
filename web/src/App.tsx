@@ -6,7 +6,6 @@ function SendMessage({onSend}: {onSend: (msg: string) => void}) {
   const [message, setMessage] = useState("");
 
   const sendMessage = (event: React.FormEvent<HTMLFormElement>) => {
-    console.log('BUM')
     event.preventDefault();
     if (message.trim() === "") {
       // Skip empty messages
@@ -38,16 +37,22 @@ function SendMessage({onSend}: {onSend: (msg: string) => void}) {
 
 export default function App() {
   const socketUrl = "ws://localhost:8000/ws"
-  const [messageHistory, setMessageHistory] = useState<any[]>([]);
+  const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
   useEffect(() => {
     if (lastMessage !== null) {
-      setMessageHistory((prev) => prev.concat(lastMessage.data));
+      const payload = JSON.parse(lastMessage.data);
+      setMessageHistory((prev) => prev.concat(`BOT: ${payload.question}`));
     }
   }, [lastMessage, setMessageHistory]);
 
-  const handleSend = useCallback((msg: string) => sendMessage(JSON.stringify({answer: msg})), []);
+  const handleSend = useCallback((msg: string) => {
+    if (readyState === ReadyState.OPEN) {
+      setMessageHistory((prev) => prev.concat(`ME: ${msg}`));
+      return sendMessage(JSON.stringify({answer: msg}));
+    }
+  }, [readyState, sendMessage,setMessageHistory, lastMessage]);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
