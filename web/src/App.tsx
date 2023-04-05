@@ -2,9 +2,43 @@ import { useCallback, useEffect, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import './App.css'
 
+function SendMessage({onSend}: {onSend: (msg: string) => void}) {
+  const [message, setMessage] = useState("");
+
+  const sendMessage = (event: React.FormEvent<HTMLFormElement>) => {
+    console.log('BUM')
+    event.preventDefault();
+    if (message.trim() === "") {
+      // Skip empty messages
+      return;
+    }
+    onSend(message.trim());
+    setMessage("");
+  }
+
+  return (
+    <form className="send-message" onSubmit={(ev) => sendMessage(ev)}>
+      <label htmlFor="messageInput" hidden>
+        Enter Message
+      </label>
+      <input
+        id="messageInput"
+        name="messageInput"
+        type="text"
+        className="form-input__input"
+        placeholder="type message..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button type="submit">Send</button>
+    </form>
+  );
+}
+
+
 export default function App() {
   const socketUrl = "ws://localhost:8000/ws"
-  const [messageHistory, setMessageHistory] = useState<string[]>([]);
+  const [messageHistory, setMessageHistory] = useState<any[]>([]);
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
   useEffect(() => {
@@ -13,7 +47,7 @@ export default function App() {
     }
   }, [lastMessage, setMessageHistory]);
 
-  const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
+  const handleSend = useCallback((msg: string) => sendMessage(JSON.stringify({answer: msg})), []);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -26,12 +60,7 @@ export default function App() {
   return (
     <div>
       <p>The WebSocket is currently {connectionStatus}</p>
-      <button
-        onClick={handleClickSendMessage}
-        disabled={readyState !== ReadyState.OPEN}
-      >
-        Click Me to send 'Hello'
-      </button>
+      <SendMessage onSend={handleSend}/>
       {messageHistory.map((message, idx) => (
         <p key={idx}>{message}</p>
       ))}
